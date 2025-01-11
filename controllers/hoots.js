@@ -9,7 +9,8 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const hoots = await Hoot.find({})
-      .populate("author")
+      .populate("author", "username_id")
+      .populate("comments.author", "username _id")
       .sort({ createdAt: "desc" });
     res.status(200).json(hoots);
   } catch (error) {
@@ -19,7 +20,12 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const hoot = await Hoot.findById(req.params.id).populate("author");
+    const hoot = await Hoot.findById(req.params.id)
+      .populate("author", "username _id")
+      .populate("comments.author", "username _id");
+       if (!hoot) {
+         return res.status(404).json({ message: "Hoot not found" });
+       }
     res.status(200).json(hoot);
   } catch (error) {
     res.status(500).json(error);
